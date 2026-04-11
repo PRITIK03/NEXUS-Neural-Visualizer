@@ -42,6 +42,7 @@ function Neuron({ position, pulse, layerIndex }) {
   })
   
   const neuronColor = pulse ? color1 : hovered ? '#ff00ff' : color2
+  const baseIntensity = pulse ? 2.5 : hovered ? 2 : 1.2
   
   return (
     <group position={position}>
@@ -53,7 +54,7 @@ function Neuron({ position, pulse, layerIndex }) {
         <meshStandardMaterial
           color={neuronColor}
           emissive={neuronColor}
-          emissiveIntensity={pulse ? 2.5 : hovered ? 2 : 1}
+          emissiveIntensity={baseIntensity}
           roughness={0.05}
           metalness={0.95}
           envMapIntensity={1.5}
@@ -197,25 +198,26 @@ function SynapseLayer({ startLayer, endLayer, startCount, endCount }) {
 
 function NeuralNetwork({ activeLayer }) {
   const [activeNeurons, setActiveNeurons] = useState([])
+  const layerCounts = [6, 8, 6, 4]
   
   useEffect(() => {
-    const interval = setInterval(() => {
+    const timer = setTimeout(() => {
       const layerNeurons = []
-      const count = [6, 8, 6, 4][activeLayer] || 6
+      const count = layerCounts[activeLayer] || 6
       for (let i = 0; i < count; i++) {
-        if (Math.random() > 0.5) layerNeurons.push(i)
+        if (Math.random() > 0.4) layerNeurons.push(i)
       }
       setActiveNeurons(layerNeurons)
-    }, 500)
-    return () => clearInterval(interval)
+    }, 100)
+    return () => clearTimeout(timer)
   }, [activeLayer])
   
   return (
     <group>
-      <NeuralLayer layerIndex={0} neuronCount={6} activeNeurons={activeLayer === 0 ? activeNeurons : []} />
-      <NeuralLayer layerIndex={1} neuronCount={8} activeNeurons={activeLayer === 1 ? activeNeurons : []} />
-      <NeuralLayer layerIndex={2} neuronCount={6} activeNeurons={activeLayer === 2 ? activeNeurons : []} />
-      <NeuralLayer layerIndex={3} neuronCount={4} activeNeurons={activeLayer === 3 ? activeNeurons : []} />
+      <NeuralLayer layerIndex={0} neuronCount={6} activeNeurons={activeNeurons} />
+      <NeuralLayer layerIndex={1} neuronCount={8} activeNeurons={activeNeurons} />
+      <NeuralLayer layerIndex={2} neuronCount={6} activeNeurons={activeNeurons} />
+      <NeuralLayer layerIndex={3} neuronCount={4} activeNeurons={activeNeurons} />
       
       <SynapseLayer startLayer={0} endLayer={1} startCount={6} endCount={8} />
       <SynapseLayer startLayer={1} endLayer={2} startCount={8} endCount={6} />
@@ -314,22 +316,17 @@ function Particles() {
 function Scene({ activeLayer }) {
   return (
     <>
-      <color attach="background" args={['#050810']} />
-      <fog attach="fog" args={['#050810', 8, 25]} />
+      <color attach="background" args={['#0a0e17']} />
+      <fog attach="fog" args={['#0a0e17', 10, 30]} />
       
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} intensity={1.5} color="#4a90d9" />
-      <pointLight position={[-10, -10, -10]} intensity={0.8} color="#ff00ff" />
-      <pointLight position={[0, 5, 5]} intensity={0.6} color="#00ffff" />
-      <pointLight position={[5, -5, -5]} intensity={0.4} color="#00ff88" />
+      <ambientLight intensity={0.6} />
+      <pointLight position={[10, 10, 10]} intensity={2} color="#4a90d9" />
+      <pointLight position={[-10, -10, -10]} intensity={1} color="#ff00ff" />
+      <pointLight position={[0, 5, 5]} intensity={0.8} color="#00ffff" />
+      <pointLight position={[5, -5, -5]} intensity={0.6} color="#00ff88" />
+      <pointLight position={[0, -8, 8]} intensity={0.5} color="#ff0088" />
       
-      <spotLight
-        position={[0, 10, 0]}
-        angle={0.3}
-        penumbra={1}
-        intensity={0.5}
-        color="#8800ff"
-      />
+      <directionalLight position={[5, 5, 5]} intensity={0.5} color="#ffffff" />
       
       <Stars radius={100} depth={50} count={2000} factor={4} saturation={0} fade speed={0.5} />
       
