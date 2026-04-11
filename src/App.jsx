@@ -1,37 +1,55 @@
 import { useState, useRef, useEffect, Suspense } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Float } from '@react-three/drei'
+import { EffectComposer, Bloom, ChromaticAberration, Vignette } from '@react-three/postprocessing'
+import { BlendFunction } from 'postprocessing'
 import { motion, AnimatePresence } from 'framer-motion'
 import * as THREE from 'three'
 import './App.css'
 
 function Neuron({ position, pulse }) {
   const meshRef = useRef()
+  const glowRef = useRef()
   const [hovered, setHovered] = useState(false)
   
   useFrame((state) => {
     if (meshRef.current) {
       const scale = hovered ? 1.5 : 1 + Math.sin(state.clock.elapsedTime * 2 + position[0]) * 0.2
       meshRef.current.scale.setScalar(pulse ? scale * 1.3 : scale)
+      meshRef.current.rotation.y += 0.01
+      meshRef.current.rotation.x += 0.005
+    }
+    if (glowRef.current) {
+      glowRef.current.scale.setScalar((pulse ? scale * 1.3 : scale) * 1.5)
+      glowRef.current.material.opacity = pulse ? 0.4 : hovered ? 0.3 : 0.1 + Math.sin(state.clock.elapsedTime * 3) * 0.05
     }
   })
   
   return (
-    <mesh
-      ref={meshRef}
-      position={position}
-      onPointerOver={() => setHovered(true)}
-      onPointerOut={() => setHovered(false)}
-    >
-      <sphereGeometry args={[0.15, 32, 32]} />
-      <meshStandardMaterial
-        color={pulse ? "#00ffff" : hovered ? "#ff00ff" : "#4a90d9"}
-        emissive={pulse ? "#00ffff" : hovered ? "#ff00ff" : "#4a90d9"}
-        emissiveIntensity={pulse ? 2 : hovered ? 1.5 : 0.5}
-        roughness={0.2}
-        metalness={0.8}
-      />
-    </mesh>
+    <group position={position}>
+      <mesh ref={meshRef}
+        onPointerOver={() => setHovered(true)}
+        onPointerOut={() => setHovered(false)}
+      >
+        <sphereGeometry args={[0.15, 32, 32]} />
+        <meshStandardMaterial
+          color={pulse ? "#00ffff" : hovered ? "#ff00ff" : "#4a90d9"}
+          emissive={pulse ? "#00ffff" : hovered ? "#ff00ff" : "#4a90d9"}
+          emissiveIntensity={pulse ? 2 : hovered ? 1.5 : 0.8}
+          roughness={0.1}
+          metalness={0.9}
+        />
+      </mesh>
+      <mesh ref={glowRef} scale={1.5}>
+        <sphereGeometry args={[0.15, 16, 16]} />
+        <meshBasicMaterial
+          color={pulse ? "#00ffff" : hovered ? "#ff00ff" : "#4a90d9"}
+          transparent
+          opacity={0.15}
+          side={THREE.BackSide}
+        />
+      </mesh>
+    </group>
   )
 }
 
