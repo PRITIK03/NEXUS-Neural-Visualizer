@@ -1,35 +1,92 @@
-import { useState, useRef, useEffect, Suspense, useMemo } from 'react'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { OrbitControls, Float, Stars, Sparkles } from '@react-three/drei'
-import { EffectComposer, Bloom, ChromaticAberration, Vignette, Noise, Scanline } from '@react-three/postprocessing'
-import { BlendFunction } from 'postprocessing'
-import { motion, AnimatePresence } from 'framer-motion'
+import { useState, useRef, Suspense, useMemo } from 'react'
+import { Canvas, useFrame } from '@react-three/fiber'
+import { OrbitControls, Float, Stars } from '@react-three/drei'
+import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
+import { motion } from 'framer-motion'
 import * as THREE from 'three'
 import './App.css'
 
-function Neuron({ position, pulse, layerIndex }) {
+function SimpleNeuron({ position, color = "#00ffff" }) {
   const meshRef = useRef()
-  const glowRef = useRef()
-  const ringRef = useRef()
-  const [hovered, setHovered] = useState(false)
-  
-  const colors = useMemo(() => [
-    ['#00ffff', '#4a90d9'],
-    ['#00ff88', '#00ffff'],
-    ['#ff00ff', '#ff0088'],
-    ['#ff6600', '#ff0066']
-  ], [])
-  
-  const [color1, color2] = colors[layerIndex] || colors[0]
   
   useFrame((state) => {
     if (meshRef.current) {
-      const scale = hovered ? 1.5 : 1 + Math.sin(state.clock.elapsedTime * 2 + position[0] + position[1]) * 0.2
-      meshRef.current.scale.setScalar(pulse ? scale * 1.4 : scale)
-      meshRef.current.rotation.y += 0.015
-      meshRef.current.rotation.x += 0.008
-      meshRef.current.rotation.z += 0.005
+      meshRef.current.rotation.y += 0.01
+      meshRef.current.rotation.x += 0.005
+      const scale = 1 + Math.sin(state.clock.elapsedTime * 2 + position[0]) * 0.1
+      meshRef.current.scale.setScalar(scale)
     }
+  })
+  
+  return (
+    <mesh ref={meshRef} position={position}>
+      <sphereGeometry args={[0.2, 16, 16]} />
+      <meshStandardMaterial 
+        color={color} 
+        emissive={color}
+        emissiveIntensity={1}
+        roughness={0.3}
+        metalness={0.7}
+      />
+    </mesh>
+  )
+}
+
+function NeuralNetwork() {
+  const groupRef = useRef()
+  
+  const positions = useMemo(() => [
+    [-2.5, 0, 0], [-2.5, 1, 0], [-2.5, -1, 0], [-2.5, 0.5, 0], [-2.5, -0.5, 0],
+    [-1, 0, 0], [-1, 1.2, 0], [-1, 0.6, 0], [-1, -0.6, 0], [-1, -1.2, 0],
+    [0.5, 0, 0], [0.5, 1, 0], [0.5, -1, 0], [0.5, 0.5, 0], [0.5, -0.5, 0],
+    [2, 0, 0], [2, 0.7, 0], [2, -0.7, 0]
+  ], [])
+  
+  const colors = useMemo(() => [
+    "#00ffff", "#00ff88", "#4a90d9", "#ff00ff", "#ff6600"
+  ], [])
+  
+  useFrame((state) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y = Math.sin(state.clock.elapsedTime * 0.3) * 0.2
+    }
+  })
+  
+  return (
+    <group ref={groupRef}>
+      {positions.map((pos, i) => (
+        <SimpleNeuron 
+          key={i} 
+          position={pos} 
+          color={colors[i % colors.length]} 
+        />
+      ))}
+    </group>
+  )
+}
+
+function Scene() {
+  return (
+    <>
+      <ambientLight intensity={0.8} />
+      <pointLight position={[10, 10, 10]} intensity={1.5} color="#ffffff" />
+      <pointLight position={[-10, -10, -10]} intensity={1} color="#00ffff" />
+      
+      <Stars radius={100} depth={50} count={1000} factor={3} saturation={0} fade />
+      
+      <Float speed={1} rotationIntensity={0.2} floatIntensity={0.3}>
+        <NeuralNetwork />
+      </Float>
+      
+      <OrbitControls enableZoom={true} enablePan={true} autoRotate autoRotateSpeed={0.5} />
+      
+      <EffectComposer>
+        <Bloom intensity={0.8} luminanceThreshold={0.2} />
+        <Vignette offset={0.3} darkness={0.6} />
+      </EffectComposer>
+    </>
+  )
+}
     if (glowRef.current) {
       const glowScale = (pulse ? scale * 1.4 : scale) * 1.8
       glowRef.current.scale.setScalar(glowScale)
@@ -541,10 +598,8 @@ function App() {
               transition={{ duration: 0.4, ease: [0.175, 0.885, 0.32, 1.275] }}
             >
               <div className="canvas-container">
-                <Canvas camera={{ position: [0, 0, 8], fov: 60 }}>
-                  <Suspense fallback={null}>
-                    <Scene activeLayer={activeLayer} />
-                  </Suspense>
+                <Canvas camera={{ position: [0, 0, 10], fov: 50 }}>
+                  <Scene />
                 </Canvas>
               </div>
               
