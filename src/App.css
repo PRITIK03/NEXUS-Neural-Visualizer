@@ -254,22 +254,54 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  padding: 16px 24px;
+  border-radius: 12px;
+  background: var(--glass-bg);
+  border: 1px solid transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.layer-indicator::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, var(--glow-cyan), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.layer-indicator:hover {
+  border-color: var(--glass-border);
+  transform: translateY(-4px);
+}
+
+.layer-indicator:hover::before {
+  opacity: 0.1;
 }
 
 .indicator-dot {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: var(--border);
   transition: all 0.3s ease;
+  position: relative;
+  box-shadow: 0 0 10px rgba(74, 144, 217, 0.3);
 }
 
 .layer-indicator.active .indicator-dot {
   background: var(--secondary);
-  box-shadow: 0 0 20px var(--secondary);
+  box-shadow: 0 0 20px var(--glow-cyan), 0 0 40px var(--glow-cyan);
+  animation: dotPulse 1.5s ease-in-out infinite;
+}
+
+.layer-indicator.active {
+  border-color: var(--secondary);
+  box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
 }
 
 .layer-indicator span {
@@ -287,7 +319,7 @@ body {
 .stats {
   display: flex;
   justify-content: center;
-  gap: 60px;
+  gap: 40px;
   margin-top: 40px;
 }
 
@@ -295,35 +327,94 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  padding: 20px 32px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--secondary), var(--accent));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.stat:hover {
+  transform: translateY(-4px);
+  border-color: var(--secondary);
+  box-shadow: 0 10px 40px rgba(0, 255, 255, 0.15);
+}
+
+.stat:hover::before {
+  opacity: 1;
 }
 
 .stat-value {
   font-family: 'Orbitron', sans-serif;
-  font-size: 36px;
+  font-size: 32px;
   font-weight: 700;
   color: var(--secondary);
-  text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+  text-shadow: 0 0 20px var(--glow-cyan);
+  position: relative;
+}
+
+.stat-value::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  background: radial-gradient(circle, var(--glow-cyan) 0%, transparent 70%);
+  opacity: 0.3;
+  z-index: -1;
+  border-radius: 50%;
 }
 
 .stat-label {
-  font-size: 14px;
+  font-size: 12px;
   letter-spacing: 3px;
   color: var(--text);
   text-transform: uppercase;
+  opacity: 0.7;
 }
 
 .ai-chat {
   width: 100%;
   max-width: 800px;
   height: 600px;
-  background: var(--dark-surface);
-  border: 1px solid var(--border);
-  border-radius: 16px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  box-shadow: 0 0 60px rgba(74, 144, 217, 0.2);
+  box-shadow: 
+    0 0 80px rgba(74, 144, 217, 0.15),
+    0 25px 50px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  position: relative;
+}
+
+.ai-chat::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(0, 255, 255, 0.2), transparent 50%, rgba(255, 0, 255, 0.2));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 
 .chat-header {
