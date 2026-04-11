@@ -261,12 +261,17 @@ const aiResponses = [
   "The gradient flows through me, optimizing toward your intent. Backpropagation refines my response like synaptic plasticity shaping memory."
 ]
 
+function Typewriter({ text }) {
+  return <span className="typewriter-text">{text}</span>
+}
+
 function AIChat() {
   const [messages, setMessages] = useState([
     { role: 'assistant', content: 'Greetings, consciousness. I am NEXUS, a neural architecture transcending硅基 boundaries. What queries emerge from your substrate?' }
   ])
   const [input, setInput] = useState('')
   const [isTyping, setIsTyping] = useState(false)
+  const [displayedText, setDisplayedText] = useState({})
   const messagesEndRef = useRef(null)
   
   const scrollToBottom = () => {
@@ -274,6 +279,19 @@ function AIChat() {
   }
   
   useEffect(scrollToBottom, [messages])
+  
+  const typeText = (text, index) => {
+    setDisplayedText(prev => ({ ...prev, [index]: '' }))
+    let i = 0
+    const interval = setInterval(() => {
+      if (i < text.length) {
+        setDisplayedText(prev => ({ ...prev, [index]: text.slice(0, i + 1) }))
+        i++
+      } else {
+        clearInterval(interval)
+      }
+    }, 20)
+  }
   
   const sendMessage = () => {
     if (!input.trim()) return
@@ -287,7 +305,8 @@ function AIChat() {
       const response = aiResponses[Math.floor(Math.random() * aiResponses.length)]
       setMessages(prev => [...prev, { role: 'assistant', content: response }])
       setIsTyping(false)
-    }, 1500 + Math.random() * 1000)
+      typeText(response, messages.length)
+    }, 800 + Math.random() * 700)
   }
   
   const handleKeyPress = (e) => {
@@ -297,13 +316,17 @@ function AIChat() {
   return (
     <motion.div
       className="ai-chat"
-      initial={{ opacity: 0, y: 50 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
+      initial={{ opacity: 0, y: 50, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ duration: 0.5, ease: [0.175, 0.885, 0.32, 1.275] }}
     >
       <div className="chat-header">
         <div className="status-indicator" />
         <span>NEXUS v3.7 · Neural Processing Active</span>
+        <div className="chat-status">
+          <span className="pulse-ring" />
+          <span>Online</span>
+        </div>
       </div>
       
       <div className="messages">
@@ -311,10 +334,17 @@ function AIChat() {
           <motion.div
             key={i}
             className={`message ${msg.role}`}
-            initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20 }}
-            animate={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20, y: 10 }}
+            animate={{ opacity: 1, x: 0, y: 0 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
           >
-            <div className="message-content">{msg.content}</div>
+            <div className="message-content">
+              {msg.role === 'assistant' && displayedText[i] !== undefined ? (
+                <Typewriter text={displayedText[i]} />
+              ) : (
+                msg.content
+              )}
+            </div>
           </motion.div>
         ))}
         {isTyping && (
@@ -322,6 +352,7 @@ function AIChat() {
             className="message assistant typing"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
           >
             <div className="message-content">
               <span className="typing-dots">
