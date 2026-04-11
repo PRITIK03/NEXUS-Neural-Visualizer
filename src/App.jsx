@@ -301,11 +301,13 @@ function AIChat() {
     setInput('')
     setIsTyping(true)
     
+    const newMsgIndex = messages.length + 1
+    
     setTimeout(() => {
       const response = aiResponses[Math.floor(Math.random() * aiResponses.length)]
       setMessages(prev => [...prev, { role: 'assistant', content: response }])
       setIsTyping(false)
-      typeText(response, messages.length)
+      typeText(response, newMsgIndex)
     }, 800 + Math.random() * 700)
   }
   
@@ -424,9 +426,10 @@ function App() {
             <motion.div
               key="visualizer"
               className="visualizer-container"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.4, ease: [0.175, 0.885, 0.32, 1.275] }}
             >
               <div className="canvas-container">
                 <Canvas camera={{ position: [0, 0, 8], fov: 60 }}>
@@ -438,40 +441,55 @@ function App() {
               
               <motion.div
                 className="layer-indicators"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, staggerChildren: 0.1 }}
               >
                 {['Input', 'Hidden 1', 'Hidden 2', 'Output'].map((layer, i) => (
-                  <div
+                  <motion.div
                     key={layer}
                     className={`layer-indicator ${activeLayer === i ? 'active' : ''}`}
                     onClick={() => setActiveLayer(i)}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.98 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                   >
                     <div className="indicator-dot" />
                     <span>{layer}</span>
-                  </div>
+                  </motion.div>
                 ))}
               </motion.div>
               
               <motion.div
                 className="stats"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, staggerChildren: 0.1 }}
               >
-                <div className="stat">
+                <motion.div 
+                  className="stat"
+                  whileHover={{ scale: 1.05, y: -4 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                >
                   <span className="stat-value">1.7T</span>
                   <span className="stat-label">Parameters</span>
-                </div>
-                <div className="stat">
+                </motion.div>
+                <motion.div 
+                  className="stat"
+                  whileHover={{ scale: 1.05, y: -4 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                >
                   <span className="stat-value">120</span>
                   <span className="stat-label">Layers</span>
-                </div>
-                <div className="stat">
+                </motion.div>
+                <motion.div 
+                  className="stat"
+                  whileHover={{ scale: 1.05, y: -4 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                >
                   <span className="stat-value">∞</span>
                   <span className="stat-label">Tokens/sec</span>
-                </div>
+                </motion.div>
               </motion.div>
             </motion.div>
           ) : (

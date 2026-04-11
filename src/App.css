@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Rajdhani:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap');
 
 :root {
   --primary: #4a90d9;
@@ -13,6 +13,8 @@
   --glass-border: rgba(74, 144, 217, 0.3);
   --glow-cyan: rgba(0, 255, 255, 0.4);
   --glow-magenta: rgba(255, 0, 255, 0.4);
+  --font-display: 'Syne', sans-serif;
+  --font-mono: 'Space Mono', monospace;
 }
 
 * {
@@ -111,6 +113,31 @@ body {
   pointer-events: none;
 }
 
+.nav button {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 14px 28px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--secondary);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  letter-spacing: 2px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--glow-cyan), transparent);
+  opacity: 0.1;
+  pointer-events: none;
+}
+
 .logo {
   display: flex;
   align-items: center;
@@ -147,14 +174,28 @@ body {
 }
 
 .logo-text {
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-display);
   font-size: 28px;
   font-weight: 700;
   letter-spacing: 4px;
+  background: linear-gradient(90deg, var(--secondary), var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  position: relative;
+}
+
+.logo-text::after {
+  content: 'NEXUS';
+  position: absolute;
+  left: 0;
+  top: 0;
   background: linear-gradient(90deg, var(--secondary), var(--primary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  filter: blur(10px);
+  opacity: 0.5;
 }
 
 .nav button {
@@ -305,11 +346,12 @@ body {
 }
 
 .layer-indicator span {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   letter-spacing: 2px;
   color: var(--text);
   text-transform: uppercase;
+  font-weight: 500;
 }
 
 .layer-indicator.active span {
@@ -360,7 +402,7 @@ body {
 }
 
 .stat-value {
-  font-family: 'Orbitron', sans-serif;
+  font-family: var(--font-display);
   font-size: 32px;
   font-weight: 700;
   color: var(--secondary);
@@ -379,7 +421,8 @@ body {
 }
 
 .stat-label {
-  font-size: 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
   letter-spacing: 3px;
   color: var(--text);
   text-transform: uppercase;
@@ -423,8 +466,8 @@ body {
   gap: 12px;
   padding: 20px 24px;
   border-bottom: 1px solid var(--glass-border);
-  font-family: 'Orbitron', sans-serif;
-  font-size: 13px;
+  font-family: var(--font-mono);
+  font-size: 12px;
   letter-spacing: 2px;
   background: rgba(0, 0, 0, 0.2);
   position: relative;
@@ -439,6 +482,38 @@ body {
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--secondary), transparent);
   opacity: 0.5;
+}
+
+.chat-status {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--secondary);
+  opacity: 0.7;
+}
+
+.pulse-ring {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--secondary);
+  position: relative;
+}
+
+.pulse-ring::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid var(--secondary);
+  animation: ringExpand 2s ease-out infinite;
+}
+
+@keyframes ringExpand {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2); opacity: 0; }
 }
 
 .status-indicator {
@@ -535,6 +610,22 @@ body {
 @keyframes dotPulse {
   0%, 100% { opacity: 0.3; }
   50% { opacity: 1; }
+}
+
+.typewriter-text {
+  position: relative;
+}
+
+.typewriter-text::after {
+  content: '|';
+  animation: cursorBlink 0.7s infinite;
+  color: var(--secondary);
+  margin-left: 2px;
+}
+
+@keyframes cursorBlink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
 }
 
 .input-area {
@@ -641,34 +732,138 @@ body {
 
 @media (max-width: 768px) {
   .header {
-    padding: 16px 20px;
+    padding: 12px 16px;
+  }
+  
+  .logo {
+    gap: 8px;
+  }
+  
+  .logo-icon {
+    font-size: 24px;
   }
   
   .logo-text {
     font-size: 20px;
+    letter-spacing: 2px;
+  }
+  
+  .nav button {
+    font-size: 11px;
+    padding: 10px 16px;
+    letter-spacing: 1px;
   }
   
   .main {
-    padding: 80px 20px 20px;
+    padding: 70px 12px 20px;
   }
   
   .canvas-container {
-    height: 350px;
+    height: 300px;
+    border-radius: 16px;
   }
   
   .layer-indicators {
-    gap: 20px;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  
+  .layer-indicator {
+    padding: 10px 16px;
+    gap: 8px;
+  }
+  
+  .indicator-dot {
+    width: 10px;
+    height: 10px;
+  }
+  
+  .layer-indicator span {
+    font-size: 10px;
   }
   
   .stats {
-    gap: 30px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  
+  .stat {
+    padding: 14px 20px;
+    min-width: 100px;
   }
   
   .stat-value {
-    font-size: 28px;
+    font-size: 24px;
+  }
+  
+  .stat-label {
+    font-size: 9px;
+    letter-spacing: 2px;
   }
   
   .ai-chat {
-    height: 500px;
+    height: 450px;
+    border-radius: 16px;
+  }
+  
+  .chat-header {
+    padding: 12px 16px;
+    font-size: 10px;
+  }
+  
+  .chat-status {
+    font-size: 9px;
+  }
+  
+  .messages {
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .message-content {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+  
+  .input-area {
+    padding: 12px 16px;
+    gap: 8px;
+  }
+  
+  .input-area input {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  
+  .input-area button {
+    padding: 12px 16px;
+  }
+  
+  .input-area button svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .layer-indicators {
+    gap: 8px;
+  }
+  
+  .layer-indicator {
+    padding: 8px 12px;
+  }
+  
+  .stats {
+    gap: 12px;
+  }
+  
+  .stat {
+    padding: 10px 14px;
+    min-width: 80px;
+  }
+  
+  .stat-value {
+    font-size: 20px;
   }
 }
