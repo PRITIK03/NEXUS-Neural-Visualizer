@@ -1,29 +1,47 @@
 import { useState, useRef, useEffect, Suspense, useMemo } from 'react'
-import { Canvas, useFrame } from '@react-three/fiber'
-import { OrbitControls, Float } from '@react-three/drei'
-import { EffectComposer, Bloom, ChromaticAberration, Vignette } from '@react-three/postprocessing'
+import { Canvas, useFrame, useThree } from '@react-three/fiber'
+import { OrbitControls, Float, Stars, Sparkles } from '@react-three/drei'
+import { EffectComposer, Bloom, ChromaticAberration, Vignette, Noise, Scanline } from '@react-three/postprocessing'
 import { BlendFunction } from 'postprocessing'
 import { motion, AnimatePresence } from 'framer-motion'
 import * as THREE from 'three'
 import './App.css'
 
-function Neuron({ position, pulse }) {
+function Neuron({ position, pulse, layerIndex }) {
   const meshRef = useRef()
   const glowRef = useRef()
+  const ringRef = useRef()
   const [hovered, setHovered] = useState(false)
+  
+  const colors = useMemo(() => [
+    ['#00ffff', '#4a90d9'],
+    ['#00ff88', '#00ffff'],
+    ['#ff00ff', '#ff0088'],
+    ['#ff6600', '#ff0066']
+  ], [])
+  
+  const [color1, color2] = colors[layerIndex] || colors[0]
   
   useFrame((state) => {
     if (meshRef.current) {
-      const scale = hovered ? 1.5 : 1 + Math.sin(state.clock.elapsedTime * 2 + position[0]) * 0.2
-      meshRef.current.scale.setScalar(pulse ? scale * 1.3 : scale)
-      meshRef.current.rotation.y += 0.01
-      meshRef.current.rotation.x += 0.005
+      const scale = hovered ? 1.5 : 1 + Math.sin(state.clock.elapsedTime * 2 + position[0] + position[1]) * 0.2
+      meshRef.current.scale.setScalar(pulse ? scale * 1.4 : scale)
+      meshRef.current.rotation.y += 0.015
+      meshRef.current.rotation.x += 0.008
+      meshRef.current.rotation.z += 0.005
     }
     if (glowRef.current) {
-      glowRef.current.scale.setScalar((pulse ? scale * 1.3 : scale) * 1.5)
-      glowRef.current.material.opacity = pulse ? 0.4 : hovered ? 0.3 : 0.1 + Math.sin(state.clock.elapsedTime * 3) * 0.05
+      const glowScale = (pulse ? scale * 1.4 : scale) * 1.8
+      glowRef.current.scale.setScalar(glowScale)
+      glowRef.current.material.opacity = pulse ? 0.5 : hovered ? 0.35 : 0.12 + Math.sin(state.clock.elapsedTime * 3 + position[0]) * 0.04
+    }
+    if (ringRef.current) {
+      ringRef.current.rotation.z += 0.02
+      ringRef.current.material.opacity = pulse ? 0.4 : hovered ? 0.2 : 0.05 + Math.sin(state.clock.elapsedTime * 4) * 0.03
     }
   })
+  
+  const neuronColor = pulse ? color1 : hovered ? '#ff00ff' : color2
   
   return (
     <group position={position}>
@@ -31,29 +49,38 @@ function Neuron({ position, pulse }) {
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
       >
-        <sphereGeometry args={[0.15, 32, 32]} />
+        <icosahedronGeometry args={[0.15, 1]} />
         <meshStandardMaterial
-          color={pulse ? "#00ffff" : hovered ? "#ff00ff" : "#4a90d9"}
-          emissive={pulse ? "#00ffff" : hovered ? "#ff00ff" : "#4a90d9"}
-          emissiveIntensity={pulse ? 2 : hovered ? 1.5 : 0.8}
-          roughness={0.1}
-          metalness={0.9}
+          color={neuronColor}
+          emissive={neuronColor}
+          emissiveIntensity={pulse ? 2.5 : hovered ? 2 : 1}
+          roughness={0.05}
+          metalness={0.95}
+          envMapIntensity={1.5}
         />
       </mesh>
-      <mesh ref={glowRef} scale={1.5}>
+      <mesh ref={glowRef} scale={1.8}>
         <sphereGeometry args={[0.15, 16, 16]} />
         <meshBasicMaterial
-          color={pulse ? "#00ffff" : hovered ? "#ff00ff" : "#4a90d9"}
+          color={neuronColor}
+          transparent
+          opacity={0.2}
+          side={THREE.BackSide}
+        />
+      </mesh>
+      <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[0.25, 0.015, 8, 32]} />
+        <meshBasicMaterial
+          color={neuronColor}
           transparent
           opacity={0.15}
-          side={THREE.BackSide}
         />
       </mesh>
     </group>
   )
 }
 
-function Synapse({ start, end, active }) {
+function Synapse({ start, end, active, layerIndex }) {
   const points = useMemo(() => [
     new THREE.Vector3(...start),
     new THREE.Vector3(...end)
@@ -64,14 +91,51 @@ function Synapse({ start, end, active }) {
     return geometry
   }, [points])
   
+  const colors = ['#00ffff', '#00ff88', '#ff00ff', '#ff6600']
+  const color = colors[layerIndex] || colors[0]
+  
   return (
-    <line geometry={lineGeometry}>
-      <lineBasicMaterial
-        color={active ? "#00ffff" : "#1a3a5c"}
+    <group>
+      <line geometry={lineGeometry}>
+        <lineBasicMaterial
+          color={active ? color : '#1a3a5c'}
+          transparent
+          opacity={active ? 0.6 : 0.15}
+        />
+      </line>
+      {active && (
+        <SynapsePulse start={start} end={end} color={color} />
+      )}
+    </group>
+  )
+}
+
+function SynapsePulse({ start, end, color }) {
+  const meshRef = useRef()
+  const progressRef = useRef(Math.random())
+  
+  useFrame((state, delta) => {
+    if (meshRef.current) {
+      progressRef.current += delta * 0.5
+      if (progressRef.current > 1) progressRef.current = 0
+      
+      const x = start[0] + (end[0] - start[0]) * progressRef.current
+      const y = start[1] + (end[1] - start[1]) * progressRef.current
+      const z = start[2] + (end[2] - start[2]) * progressRef.current
+      meshRef.current.position.set(x, y, z)
+      meshRef.current.scale.setScalar(1 - progressRef.current * 0.5)
+    }
+  })
+  
+  return (
+    <mesh ref={meshRef}>
+      <sphereGeometry args={[0.04, 8, 8]} />
+      <meshBasicMaterial
+        color={color}
         transparent
-        opacity={active ? 0.8 : 0.3}
+        opacity={0.9}
       />
-    </line>
+    </mesh>
   )
 }
 
@@ -93,6 +157,7 @@ function NeuralLayer({ layerIndex, neuronCount, activeNeurons }) {
           key={i}
           position={pos}
           pulse={activeNeurons.includes(i)}
+          layerIndex={layerIndex}
         />
       ))}
     </>
@@ -107,13 +172,13 @@ function SynapseLayer({ startLayer, endLayer, startCount, endCount }) {
     
     for (let i = 0; i < startCount; i++) {
       for (let j = 0; j < endCount; j++) {
-        if (Math.random() > 0.4) {
+        if (Math.random() > 0.35) {
           const startY = (i - (startCount - 1) / 2) * startSpacing
           const endY = (j - (endCount - 1) / 2) * endSpacing
           arr.push({
             start: [startLayer * 1.5 - 2.25, startY, 0],
             end: [endLayer * 1.5 - 2.25, endY, 0],
-            active: Math.random() > 0.5
+            active: Math.random() > 0.4
           })
         }
       }
@@ -124,7 +189,7 @@ function SynapseLayer({ startLayer, endLayer, startCount, endCount }) {
   return (
     <>
       {synapses.map((syn, i) => (
-        <Synapse key={i} start={syn.start} end={syn.end} active={syn.active} />
+        <Synapse key={i} start={syn.start} end={syn.end} active={syn.active} layerIndex={startLayer} />
       ))}
     </>
   )
@@ -161,92 +226,137 @@ function NeuralNetwork({ activeLayer }) {
 
 function Particles() {
   const particlesRef = useRef()
-  const count = 300
+  const trailRef = useRef()
+  const count = 400
   
-  const [positions, colors] = useMemo(() => {
+  const [positions, colors, sizes] = useMemo(() => {
     const pos = new Float32Array(count * 3)
     const col = new Float32Array(count * 3)
+    const siz = new Float32Array(count)
+    
+    const colorPalette = [
+      new THREE.Color("#00ffff"),
+      new THREE.Color("#00ff88"),
+      new THREE.Color("#4a90d9"),
+      new THREE.Color("#ff00ff"),
+      new THREE.Color("#8800ff")
+    ]
+    
     for (let i = 0; i < count; i++) {
-      pos[i * 3] = (Math.random() - 0.5) * 15
-      pos[i * 3 + 1] = (Math.random() - 0.5) * 15
-      pos[i * 3 + 2] = (Math.random() - 0.5) * 15
+      pos[i * 3] = (Math.random() - 0.5) * 18
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 18
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 18
       
-      const color = Math.random() > 0.5 ? new THREE.Color("#00ffff") : new THREE.Color("#4a90d9")
+      const color = colorPalette[Math.floor(Math.random() * colorPalette.length)]
       col[i * 3] = color.r
       col[i * 3 + 1] = color.g
       col[i * 3 + 2] = color.b
+      
+      siz[i] = Math.random() * 0.8 + 0.2
     }
-    return [pos, col]
+    return [pos, col, siz]
   }, [])
   
   useFrame((state) => {
     if (particlesRef.current) {
       const time = state.clock.elapsedTime
-      particlesRef.current.rotation.y = time * 0.03
-      particlesRef.current.rotation.x = time * 0.01
-      particlesRef.current.rotation.z = time * 0.02
+      particlesRef.current.rotation.y = time * 0.02
+      particlesRef.current.rotation.x = time * 0.008
+      particlesRef.current.rotation.z = time * 0.015
       
       const positions = particlesRef.current.geometry.attributes.position.array
       for (let i = 0; i < count; i++) {
-        positions[i * 3 + 1] += Math.sin(time + i * 0.1) * 0.002
+        const idx = i * 3
+        positions[idx + 1] += Math.sin(time * 0.5 + i * 0.05) * 0.003
+        positions[idx] += Math.cos(time * 0.3 + i * 0.03) * 0.002
       }
       particlesRef.current.geometry.attributes.position.needsUpdate = true
     }
   })
   
   return (
-    <points ref={particlesRef}>
-      <bufferGeometry>
-        <bufferAttribute
-          attach="attributes-position"
-          count={count}
-          array={positions}
-          itemSize={3}
+    <>
+      <points ref={particlesRef}>
+        <bufferGeometry>
+          <bufferAttribute
+            attach="attributes-position"
+            count={count}
+            array={positions}
+            itemSize={3}
+          />
+          <bufferAttribute
+            attach="attributes-color"
+            count={count}
+            array={colors}
+            itemSize={3}
+          />
+        </bufferGeometry>
+        <pointsMaterial
+          size={0.05}
+          vertexColors
+          transparent
+          opacity={0.9}
+          sizeAttenuation
+          blending={THREE.AdditiveBlending}
         />
-        <bufferAttribute
-          attach="attributes-color"
-          count={count}
-          array={colors}
-          itemSize={3}
-        />
-      </bufferGeometry>
-      <pointsMaterial
-        size={0.04}
-        vertexColors
-        transparent
-        opacity={0.8}
-        sizeAttenuation
+      </points>
+      <Sparkles
+        count={150}
+        scale={15}
+        size={2}
+        speed={0.3}
+        color="#00ffff"
       />
-    </points>
+    </>
   )
 }
 
 function Scene({ activeLayer }) {
   return (
     <>
-      <ambientLight intensity={0.4} />
-      <pointLight position={[10, 10, 10]} intensity={1.2} color="#4a90d9" />
-      <pointLight position={[-10, -10, -10]} intensity={0.6} color="#ff00ff" />
-      <pointLight position={[0, 5, 5]} intensity={0.4} color="#00ffff" />
-      <Float speed={1.5} rotationIntensity={0.15} floatIntensity={0.4}>
+      <color attach="background" args={['#050810']} />
+      <fog attach="fog" args={['#050810', 8, 25]} />
+      
+      <ambientLight intensity={0.5} />
+      <pointLight position={[10, 10, 10]} intensity={1.5} color="#4a90d9" />
+      <pointLight position={[-10, -10, -10]} intensity={0.8} color="#ff00ff" />
+      <pointLight position={[0, 5, 5]} intensity={0.6} color="#00ffff" />
+      <pointLight position={[5, -5, -5]} intensity={0.4} color="#00ff88" />
+      
+      <spotLight
+        position={[0, 10, 0]}
+        angle={0.3}
+        penumbra={1}
+        intensity={0.5}
+        color="#8800ff"
+      />
+      
+      <Stars radius={100} depth={50} count={2000} factor={4} saturation={0} fade speed={0.5} />
+      
+      <Float speed={1.2} rotationIntensity={0.1} floatIntensity={0.3}>
         <NeuralNetwork activeLayer={activeLayer} />
       </Float>
       <Particles />
-      <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.3} />
+      <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.2} />
+      
       <EffectComposer>
         <Bloom 
-          intensity={0.8}
-          luminanceThreshold={0.2}
+          intensity={1}
+          luminanceThreshold={0.15}
           luminanceSmoothing={0.9}
           mipmapBlur
         />
         <ChromaticAberration
           blendFunction={BlendFunction.NORMAL}
-          offset={[0.0005, 0.0005]}
+          offset={[0.0008, 0.0008]}
         />
         <Vignette
-          offset={0.3}
-          darkness={0.6}
+          offset={0.25}
+          darkness={0.7}
+        />
+        <Noise
+          opacity={0.03}
+          blendFunction={BlendFunction.OVERLAY}
         />
       </EffectComposer>
     </>
@@ -401,6 +511,8 @@ function App() {
         <div className="grid-overlay" />
         <div className="gradient-orb orb-1" />
         <div className="gradient-orb orb-2" />
+        <div className="gradient-orb orb-3" />
+        <div className="scanlines" />
       </div>
       
       <header className="header">
