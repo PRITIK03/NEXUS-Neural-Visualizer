@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, Suspense } from 'react'
+import { useState, useRef, useEffect, Suspense, useMemo } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Float } from '@react-three/drei'
 import { EffectComposer, Bloom, ChromaticAberration, Vignette } from '@react-three/postprocessing'
@@ -161,22 +161,36 @@ function NeuralNetwork({ activeLayer }) {
 
 function Particles() {
   const particlesRef = useRef()
-  const count = 200
+  const count = 300
   
-  const positions = useMemo(() => {
+  const [positions, colors] = useMemo(() => {
     const pos = new Float32Array(count * 3)
-    for (let i = 0; i < count * 3; i += 3) {
-      pos[i] = (Math.random() - 0.5) * 15
-      pos[i + 1] = (Math.random() - 0.5) * 15
-      pos[i + 2] = (Math.random() - 0.5) * 15
+    const col = new Float32Array(count * 3)
+    for (let i = 0; i < count; i++) {
+      pos[i * 3] = (Math.random() - 0.5) * 15
+      pos[i * 3 + 1] = (Math.random() - 0.5) * 15
+      pos[i * 3 + 2] = (Math.random() - 0.5) * 15
+      
+      const color = Math.random() > 0.5 ? new THREE.Color("#00ffff") : new THREE.Color("#4a90d9")
+      col[i * 3] = color.r
+      col[i * 3 + 1] = color.g
+      col[i * 3 + 2] = color.b
     }
-    return pos
+    return [pos, col]
   }, [])
   
   useFrame((state) => {
     if (particlesRef.current) {
-      particlesRef.current.rotation.y = state.clock.elapsedTime * 0.05
-      particlesRef.current.rotation.x = state.clock.elapsedTime * 0.02
+      const time = state.clock.elapsedTime
+      particlesRef.current.rotation.y = time * 0.03
+      particlesRef.current.rotation.x = time * 0.01
+      particlesRef.current.rotation.z = time * 0.02
+      
+      const positions = particlesRef.current.geometry.attributes.position.array
+      for (let i = 0; i < count; i++) {
+        positions[i * 3 + 1] += Math.sin(time + i * 0.1) * 0.002
+      }
+      particlesRef.current.geometry.attributes.position.needsUpdate = true
     }
   })
   
@@ -189,12 +203,18 @@ function Particles() {
           array={positions}
           itemSize={3}
         />
+        <bufferAttribute
+          attach="attributes-color"
+          count={count}
+          array={colors}
+          itemSize={3}
+        />
       </bufferGeometry>
       <pointsMaterial
-        size={0.03}
-        color="#00ffff"
+        size={0.04}
+        vertexColors
         transparent
-        opacity={0.6}
+        opacity={0.8}
         sizeAttenuation
       />
     </points>
@@ -204,14 +224,31 @@ function Particles() {
 function Scene({ activeLayer }) {
   return (
     <>
-      <ambientLight intensity={0.3} />
-      <pointLight position={[10, 10, 10]} intensity={1} color="#4a90d9" />
-      <pointLight position={[-10, -10, -10]} intensity={0.5} color="#ff00ff" />
-      <Float speed={2} rotationIntensity={0.2} floatIntensity={0.5}>
+      <ambientLight intensity={0.4} />
+      <pointLight position={[10, 10, 10]} intensity={1.2} color="#4a90d9" />
+      <pointLight position={[-10, -10, -10]} intensity={0.6} color="#ff00ff" />
+      <pointLight position={[0, 5, 5]} intensity={0.4} color="#00ffff" />
+      <Float speed={1.5} rotationIntensity={0.15} floatIntensity={0.4}>
         <NeuralNetwork activeLayer={activeLayer} />
       </Float>
       <Particles />
-      <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
+      <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.3} />
+      <EffectComposer>
+        <Bloom 
+          intensity={0.8}
+          luminanceThreshold={0.2}
+          luminanceSmoothing={0.9}
+          mipmapBlur
+        />
+        <ChromaticAberration
+          blendFunction={BlendFunction.NORMAL}
+          offset={[0.0005, 0.0005]}
+        />
+        <Vignette
+          offset={0.3}
+          darkness={0.6}
+        />
+      </EffectComposer>
     </>
   )
 }
