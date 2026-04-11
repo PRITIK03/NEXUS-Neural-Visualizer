@@ -422,10 +422,23 @@ body {
   align-items: center;
   gap: 12px;
   padding: 20px 24px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--glass-border);
   font-family: 'Orbitron', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 2px;
+  background: rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.chat-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--secondary), transparent);
+  opacity: 0.5;
 }
 
 .status-indicator {
@@ -434,6 +447,23 @@ body {
   border-radius: 50%;
   background: var(--secondary);
   animation: blink 1s ease-in-out infinite;
+  box-shadow: 0 0 10px var(--glow-cyan);
+  position: relative;
+}
+
+.status-indicator::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: var(--secondary);
+  opacity: 0.3;
+  animation: statusRing 2s ease-in-out infinite;
+}
+
+@keyframes statusRing {
+  0%, 100% { transform: scale(1); opacity: 0.3; }
+  50% { transform: scale(1.5); opacity: 0; }
 }
 
 @keyframes blink {
@@ -448,6 +478,9 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  background: 
+    radial-gradient(ellipse at 20% 80%, rgba(0, 255, 255, 0.03) 0%, transparent 40%),
+    radial-gradient(ellipse at 80% 20%, rgba(255, 0, 255, 0.02) 0%, transparent 40%);
 }
 
 .message {
@@ -464,27 +497,31 @@ body {
 
 .message-content {
   padding: 16px 20px;
-  border-radius: 16px;
+  border-radius: 20px;
   font-size: 15px;
   line-height: 1.6;
+  position: relative;
 }
 
 .message.user .message-content {
-  background: linear-gradient(135deg, var(--primary) 0%, #2d5a8a 100%);
+  background: linear-gradient(135deg, rgba(74, 144, 217, 0.9) 0%, rgba(45, 90, 138, 0.9) 100%);
   color: var(--text-h);
   border-bottom-right-radius: 4px;
+  box-shadow: 0 4px 20px rgba(74, 144, 217, 0.3);
 }
 
 .message.assistant .message-content {
-  background: rgba(0, 255, 255, 0.1);
-  border: 1px solid var(--border);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   color: var(--text);
   border-bottom-left-radius: 4px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .message.typing .message-content {
   background: transparent;
   border: none;
+  box-shadow: none;
 }
 
 .typing-dots span {
