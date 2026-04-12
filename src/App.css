@@ -25,17 +25,31 @@
   box-sizing: border-box;
 }
 
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--secondary);
+  outline-offset: 2px;
+}
+
 body {
   font-family: 'Rajdhani', sans-serif;
   background: var(--dark-bg);
   color: var(--text);
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 .app {
   min-height: 100vh;
   position: relative;
   background: var(--dark-bg);
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .background-effects {
@@ -44,6 +58,7 @@ body {
   pointer-events: none;
   z-index: 0;
   overflow: hidden;
+  transform: translateZ(0);
 }
 
 .grid-overlay {
@@ -151,28 +166,44 @@ body {
 }
 
 .nav button {
-  font-family: var(--font-display);
+  font-family: 'Orbitron', sans-serif;
   font-size: 13px;
-  font-weight: 600;
   padding: 14px 28px;
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   color: var(--secondary);
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: translateZ(0);
+  will-change: transform, box-shadow;
   letter-spacing: 2px;
   position: relative;
   overflow: hidden;
   border-radius: 8px;
 }
 
-.header::before {
+.nav button::before {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent, var(--glow-cyan), transparent);
-  opacity: 0.1;
-  pointer-events: none;
+  background: linear-gradient(135deg, var(--glow-cyan), var(--glow-magenta));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.nav button:hover {
+  background: rgba(0, 255, 255, 0.15);
+  color: var(--text-h);
+  box-shadow: 
+    0 0 30px var(--glow-cyan),
+    0 0 60px rgba(0, 255, 255, 0.2),
+    inset 0 0 20px rgba(0, 255, 255, 0.1);
+  border-color: var(--secondary);
+  transform: translateY(-2px);
+}
+
+.nav button:active {
+  transform: translateY(0) scale(0.98);
 }
 
 .logo {
@@ -377,8 +408,9 @@ body {
 }
 
 .layer-indicator:hover {
-  border-color: var(--glass-border);
+  border-color: var(--secondary);
   transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(0, 255, 255, 0.2);
 }
 
 .layer-indicator:hover::before {
