@@ -345,7 +345,9 @@ body {
   align-items: center;
   gap: 12px;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: translateZ(0);
+  will-change: transform, box-shadow;
   padding: 16px 24px;
   border-radius: 12px;
   background: var(--glass-bg);
@@ -422,7 +424,9 @@ body {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-radius: 16px;
-  transition: all 0.4s ease;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transform: translateZ(0);
+  will-change: transform, box-shadow;
   position: relative;
   overflow: hidden;
 }
@@ -487,6 +491,8 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  transform: translateZ(0);
+  will-change: transform, opacity;
   box-shadow: 
     0 0 80px rgba(74, 144, 217, 0.15),
     0 25px 50px rgba(0, 0, 0, 0.4),
