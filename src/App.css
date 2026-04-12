@@ -281,6 +281,9 @@ body {
 .visualizer-container {
   width: 100%;
   max-width: 1200px;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform, opacity;
 }
 
 .canvas-container {
@@ -594,6 +597,7 @@ body {
 .messages {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   padding: 24px;
   display: flex;
   flex-direction: column;
@@ -601,6 +605,9 @@ body {
   background: 
     radial-gradient(ellipse at 20% 80%, rgba(0, 255, 255, 0.03) 0%, transparent 40%),
     radial-gradient(ellipse at 80% 20%, rgba(255, 0, 255, 0.02) 0%, transparent 40%);
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .message {
@@ -759,20 +766,26 @@ body {
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--dark-bg);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
+  background: linear-gradient(180deg, var(--primary), var(--secondary));
+  border-radius: 3px;
+  transition: all 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--primary);
+  background: linear-gradient(180deg, var(--secondary), var(--primary));
+  box-shadow: 0 0 10px var(--glow-cyan);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 @media (max-width: 768px) {
