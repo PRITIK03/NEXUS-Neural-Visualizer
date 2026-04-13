@@ -1,8 +1,8 @@
-import { useRef, Suspense, useMemo } from 'react'
+import { useRef, Suspense, useMemo, useEffect, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Float, Stars } from '@react-three/drei'
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
-import { motion } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import './App.css'
 
 function SimpleNeuron({ position, color = "#00ffff" }) {
@@ -135,7 +135,7 @@ function AIChat() {
       className="ai-chat"
       initial={{ opacity: 0, y: 50, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.5, ease: [0.175, 0.885, 0.32, 1.275] }}
+      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
     >
       <div className="chat-header">
         <div className="status-indicator" />
