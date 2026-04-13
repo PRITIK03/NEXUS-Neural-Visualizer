@@ -50,6 +50,7 @@ body {
   background: var(--dark-bg);
   transform: translateZ(0);
   will-change: transform;
+  contain: layout style;
 }
 
 .background-effects {
