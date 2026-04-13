@@ -336,6 +336,8 @@ body {
   overflow: hidden;
   transform: translateZ(0);
   will-change: transform, opacity;
+  content-visibility: auto;
+  contain: content;
   background: 
     radial-gradient(ellipse at 20% 20%, rgba(74, 144, 217, 0.2) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 80%, rgba(255, 0, 255, 0.15) 0%, transparent 50%),
@@ -770,7 +772,7 @@ body {
   font-family: 'Rajdhani', sans-serif;
   font-size: 16px;
   outline: none;
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  transition: border-color 0.2s var(--ease-smooth), box-shadow 0.2s var(--ease-smooth), background-color 0.2s var(--ease-smooth);
   transform: translateZ(0);
   will-change: transform, box-shadow, border-color;
 }
