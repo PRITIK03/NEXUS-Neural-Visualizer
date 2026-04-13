@@ -2,7 +2,7 @@ import { useRef, Suspense, useMemo, useEffect, useState } from 'react'
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Float, Stars } from '@react-three/drei'
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
-import { motion, AnimatePresence } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import './App.css'
 
 function SimpleNeuron({ position, color = "#00ffff" }) {
@@ -250,7 +250,7 @@ function App() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                {['Input', 'Hidden 1', 'Hidden 2', 'Output'].map((layer, i) => (
+                {['Input', 'Hidden 1', 'Hidden 2', 'Output'].map((layer) => (
                   <motion.div
                     key={layer}
                     className="layer-indicator"
