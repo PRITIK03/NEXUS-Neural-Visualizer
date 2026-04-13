@@ -87,6 +87,7 @@ body {
   animation: orbFloat 15s ease-in-out infinite;
   transform: translateZ(0);
   will-change: transform, opacity;
+  transform-origin: center center;
 }
 
 .orb-1 {
@@ -659,6 +660,7 @@ body {
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .message {
