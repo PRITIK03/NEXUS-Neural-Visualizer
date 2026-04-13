@@ -193,8 +193,6 @@ function AIChat() {
   )
 }
 
-import { useState, useEffect } from 'react'
-
 function App() {
   const [showChat, setShowChat] = useState(false)
   
@@ -231,7 +229,7 @@ function App() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          transition={{ duration: 0.4, ease: [0.175, 0.885, 0.32, 1.275] }}
+          transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
           className={showChat ? "chat-container" : "visualizer-container"}
         >
           {showChat ? (
