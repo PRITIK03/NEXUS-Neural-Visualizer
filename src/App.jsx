@@ -640,11 +640,9 @@ function App() {
           <motion.span
             className="logo-icon"
             animate={{ 
-              textShadow: [
-                '0 0 20px #00ffff',
-                '0 0 40px #00ffff',
-                '0 0 20px #00ffff'
-              ]
+              textShadow: connected
+                ? ['0 0 20px #00ffff', '0 0 40px #00ffff', '0 0 20px #00ffff']
+                : ['0 0 10px #ff4444', '0 0 20px #ff4444', '0 0 10px #ff4444']
             }}
             transition={{ repeat: Infinity, duration: 2 }}
           >
@@ -658,6 +656,18 @@ function App() {
           >
             v3.8
           </motion.span>
+          {!connected && (
+            <motion.button
+              className="retry-button"
+              onClick={retryConnection}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Retry
+            </motion.button>
+          )}
         </motion.div>
         
         <nav className="nav">
