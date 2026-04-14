@@ -1,5 +1,5 @@
 :root {
-  font-family: 'Rajdhani', system-ui, sans-serif;
+  font-family: 'Rajdhani', 'Outfit', system-ui, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: dark;
@@ -26,12 +26,15 @@
   box-sizing: border-box;
 }
 
-body {
+html, body {
   margin: 0;
+  padding: 0;
   min-height: 100vh;
-  background: #0a0e17;
+  background: #060a12;
+  color: #a8c5e2;
 }
 
 #root {
   min-height: 100vh;
+  width: 100%;
 }
