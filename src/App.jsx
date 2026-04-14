@@ -434,13 +434,35 @@ function AIChat({ connected, onSendMessage }) {
 function StatsPanel({ stats }) {
   const [hoveredStat, setHoveredStat] = useState(null)
   
+  const defaultStats = {
+    parameters: '1.7T',
+    layers: 120,
+    tokensPerSec: '∞',
+    uptime: 0,
+    sessions: 0,
+    latency: { avg: 0, min: 0, max: 0 },
+    tickRate: 60
+  }
+  
+  const s = stats || defaultStats
+  
+  const formatUptime = (seconds) => {
+    if (!seconds) return '0s'
+    const hrs = Math.floor(seconds / 3600)
+    const mins = Math.floor((seconds % 3600) / 60)
+    const secs = seconds % 60
+    if (hrs > 0) return `${hrs}h ${mins}m`
+    if (mins > 0) return `${mins}m ${secs}s`
+    return `${secs}s`
+  }
+  
   const statItems = [
     { key: 'parameters', label: 'Parameters', value: '1.7T', icon: '◈' },
     { key: 'layers', label: 'Layers', value: '120', icon: '▦' },
     { key: 'tokensPerSec', label: 'Tokens/sec', value: '∞', icon: '⟿' },
-    { key: 'uptime', label: 'Uptime', value: stats?.uptime || '0s', icon: '◷' },
-    { key: 'clients', label: 'Sessions', value: stats?.sessions || '0', icon: '◉' },
-    { key: 'latency', label: 'Latency', value: `${stats?.latency?.avg || 0}ms`, icon: '⏱' }
+    { key: 'uptime', label: 'Uptime', value: formatUptime(s.uptime), icon: '◷' },
+    { key: 'sessions', label: 'Sessions', value: s.sessions?.toString() || '0', icon: '◉' },
+    { key: 'latency', label: 'Latency', value: `${s.latency?.avg || 0}ms`, icon: '⏱' }
   ]
   
   return (
@@ -535,9 +557,10 @@ function ActivityMonitor({ pulse, activation }) {
 
 function App() {
   const [showChat, setShowChat] = useState(false)
-  const [connected, setConnected] = useState(true)
+  const [connected, setConnected] = useState(false)
   const [serverStats, setServerStats] = useState(null)
   const [layerActivations, setLayerActivations] = useState(null)
+  const [retryCount, setRetryCount] = useState(0)
   
   useEffect(() => {
     const interval = setInterval(() => {
@@ -552,10 +575,29 @@ function App() {
   }, [])
   
   useEffect(() => {
-    fetch('http://localhost:3001/api/stats')
-      .then(res => res.json())
-      .then(setServerStats)
-      .catch(() => setConnected(false))
+    let mounted = true
+    
+    const fetchStats = () => {
+      fetch('http://localhost:3001/api/stats')
+        .then(res => res.json())
+        .then(data => {
+          if (mounted) {
+            setServerStats(data)
+            setConnected(true)
+          }
+        })
+        .catch(() => {
+          if (mounted) setConnected(false)
+        })
+    }
+    
+    fetchStats()
+    const interval = setInterval(fetchStats, 5000)
+    
+    return () => {
+      mounted = false
+      clearInterval(interval)
+    }
   }, [])
   
   const handleNeuronClick = useCallback((layer, index) => {
@@ -568,6 +610,14 @@ function App() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message })
     }).catch(console.error)
+  }, [])
+  
+  const retryConnection = useCallback(() => {
+    setRetryCount(c => c + 1)
+    fetch('http://localhost:3001/api/health')
+      .then(res => res.json())
+      .then(() => setConnected(true))
+      .catch(() => setConnected(false))
   }, [])
   
   return (
