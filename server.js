@@ -143,8 +143,6 @@ let attentionFocus = 0.5
 const tickRate = 60
 const PULSE_INTERVAL = 1000 / tickRate
 
-let clientLatencies = new Map()
-
 setInterval(() => {
   networkPulse += 0.015
   const rawPulse = networkPulse
