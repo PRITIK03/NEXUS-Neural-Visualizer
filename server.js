@@ -3,6 +3,7 @@ import cors from 'cors'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { createHash } from 'crypto'
+import { v4 as uuidv4 } from 'uuid'
 
 const app = express()
 const httpServer = createServer(app)
@@ -520,7 +521,6 @@ io.on('connection', (socket) => {
   clientSessions.set(socket.id, session)
   
   let currentRoom = 'global'
-  const userRooms = new Map()
 
   socket.on('join-room', (data) => {
     if (!data?.roomId) return
