@@ -153,9 +153,7 @@ setInterval(() => {
   lastPulse = easedPulse
   
   layerNeurons.forEach((neurons, layerIndex) => {
-    const layerActivation = 0.6 + Math.sin(networkPulse * (0.1 + layerIndex * 0.05)) * 0.4
-    
-    neurons.forEach((neuron, i) => {
+    neurons.forEach((neuron) => {
       const shouldActivate = Math.random() > 0.1
       neuron.update(rawPulse * (1 + layerIndex * 0.1), shouldActivate)
     })
