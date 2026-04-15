@@ -3,7 +3,6 @@ import cors from 'cors'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
 import { createHash } from 'crypto'
-import { v4 as uuidv4 } from 'uuid'
 
 const app = express()
 const httpServer = createServer(app)
