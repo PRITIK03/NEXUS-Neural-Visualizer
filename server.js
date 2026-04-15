@@ -2,7 +2,6 @@ import express from 'express'
 import cors from 'cors'
 import { createServer } from 'http'
 import { Server } from 'socket.io'
-import { createHash } from 'crypto'
 
 const app = express()
 const httpServer = createServer(app)
@@ -237,11 +236,7 @@ io.on('connection', (socket) => {
     }
   })
   
-  socket.on('disconnect', (reason) => {
-    const session = clientSessions.get(socket.id)
-    if (session) {
-      session.reconnectCount++
-    }
+  socket.on('disconnect', () => {
     clientSessions.delete(socket.id)
   })
   
@@ -257,7 +252,7 @@ io.on('connection', (socket) => {
   })
 })
 
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   console.error('Server error:', err.message)
   res.status(500).json({ error: 'Internal server error' })
 })
@@ -589,11 +584,7 @@ io.on('connection', (socket) => {
     }
   })
   
-  socket.on('disconnect', (reason) => {
-    const session = clientSessions.get(socket.id)
-    if (session) {
-      session.reconnectCount++
-    }
+  socket.on('disconnect', () => {
     clientSessions.delete(socket.id)
   })
   

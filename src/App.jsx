@@ -130,9 +130,9 @@ function NeuralLayer({ layerIndex, neurons, color, activationMap }) {
           position={pos}
           layer={layerIndex}
           index={i}
-          activation={activationMap?.[i] || Math.random()}
+          activation={activationMap?.[i] ?? 0}
           color={color}
-          isActive={(activationMap?.[i] || 0) > 0.5}
+          isActive={(activationMap?.[i] ?? 0) > 0.5}
         />
       ))}
     </group>
@@ -172,10 +172,16 @@ function ParticleField({ count = 200 }) {
   
   const particles = useMemo(() => {
     const positions = new Float32Array(count * 3)
+    const seed = 12345
+    let pseudoRandom = seed
+    const nextRandom = () => {
+      pseudoRandom = (pseudoRandom * 9301 + 49297) % 233280
+      return pseudoRandom / 233280
+    }
     for (let i = 0; i < count; i++) {
-      positions[i * 3] = (Math.random() - 0.5) * 20
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 20
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 20
+      positions[i * 3] = (nextRandom() - 0.5) * 20
+      positions[i * 3 + 1] = (nextRandom() - 0.5) * 20
+      positions[i * 3 + 2] = (nextRandom() - 0.5) * 20
     }
     return positions
   }, [count])
@@ -498,7 +504,7 @@ function StatsPanel({ stats }) {
   )
 }
 
-function ActivityMonitor({ pulse, activation }) {
+function ActivityMonitor() {
   const [metrics, setMetrics] = useState({
     cpu: 0,
     memory: 0,
@@ -770,10 +776,7 @@ function App() {
               
               <StatsPanel stats={serverStats} />
               
-              <ActivityMonitor 
-                pulse={layerActivations ? 0.5 : 0}
-                activation={0.5}
-              />
+              <ActivityMonitor />
             </motion.div>
           )}
         </AnimatePresence>
