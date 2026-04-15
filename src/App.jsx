@@ -9,7 +9,7 @@ import './App.css'
 function NeuronConnection({ start, end, pulse }) {
   const lineRef = useRef()
   
-  useFrame((state) => {
+  useFrame(() => {
     if (lineRef.current && pulse !== undefined) {
       const opacity = 0.1 + pulse * 0.4
       lineRef.current.material.opacity = opacity
@@ -33,7 +33,6 @@ function InteractiveNeuron({ position, layer, index, activation, color, isActive
   const meshRef = useRef()
   const glowRef = useRef()
   const [hovered, setHovered] = useState(false)
-  const [clicked, setClicked] = useState(false)
   
   useFrame((state) => {
     if (meshRef.current) {
@@ -51,9 +50,7 @@ function InteractiveNeuron({ position, layer, index, activation, color, isActive
   })
   
   const handleClick = useCallback(() => {
-    setClicked(true)
     onClick?.(layer, index)
-    setTimeout(() => setClicked(false), 200)
   }, [layer, index, onClick])
   
   return (
@@ -110,7 +107,6 @@ function NeuralLayer({ layerIndex, neurons, color, activationMap }) {
   
   const positions = useMemo(() => {
     const count = neurons.length
-    const spread = Math.min(count * 0.4, 2)
     return neurons.map((_, i) => {
       const angle = (i / count) * Math.PI * 2
       const radius = 0.8 + layerIndex * 0.3
@@ -120,7 +116,7 @@ function NeuralLayer({ layerIndex, neurons, color, activationMap }) {
         Math.cos(angle) * radius
       ]
     })
-  }, [neurons.length, layerIndex, layerZ])
+  }, [neurons, layerIndex, layerZ])
   
   return (
     <group ref={groupRef}>
@@ -479,7 +475,7 @@ function StatsPanel({ stats }) {
       transition={{ delay: 0.3 }}
     >
       <div className="stats-grid">
-        {statItems.map((stat, i) => (
+        {statItems.map((stat) => (
           <motion.div
             key={stat.key}
             className={`stat-card ${hoveredStat === stat.key ? 'hovered' : ''}`}
