@@ -266,6 +266,44 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' })
 })
 
+app.get('/api/canvas', (req, res) => {
+  const { roomId } = req.query
+  const room = roomId ? canvasManager.getRoom(roomId) : { strokes: canvasManager.strokes }
+  res.json({ strokes: room.strokes, count: room.strokes.length })
+})
+
+app.post('/api/canvas/stroke', (req, res) => {
+  const { stroke, roomId } = req.body
+  if (!stroke) {
+    return res.status(400).json({ error: 'Stroke data required' })
+  }
+  const targetRoom = roomId || 'global'
+  const newStroke = { ...stroke, id: Date.now().toString(36) + Math.random().toString(36).slice(2), timestamp: Date.now() }
+  canvasManager.addStrokeToRoom(targetRoom, newStroke)
+  io.to(targetRoom).emit('canvas-stroke', newStroke)
+  res.json({ success: true, stroke: newStroke })
+})
+
+app.post('/api/canvas/clear', (req, res) => {
+  const { roomId } = req.body
+  const targetRoom = roomId || 'global'
+  const room = canvasManager.getRoom(targetRoom)
+  room.strokes = []
+  room.history = []
+  room.historyIndex = -1
+  io.to(targetRoom).emit('canvas-cleared', { timestamp: Date.now() })
+  res.json({ success: true })
+})
+
+app.get('/api/rooms', (req, res) => {
+  const rooms = Array.from(canvasManager.roomCanvases.entries()).map(([id, room]) => ({
+    id,
+    userCount: room.users.size,
+    strokeCount: room.strokes.length
+  }))
+  res.json({ rooms, count: rooms.length })
+})
+
 app.get('/api/health', (req, res) => {
   const mem = process.memoryUsage()
   const uptimeSeconds = process.uptime()
