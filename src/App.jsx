@@ -2,7 +2,7 @@ import { useRef, Suspense, useMemo, useEffect, useState, useCallback } from 'rea
 import { Canvas, useFrame } from '@react-three/fiber'
 import { OrbitControls, Float, Stars, Line, Html } from '@react-three/drei'
 import { EffectComposer, Bloom, Vignette, ChromaticAberration } from '@react-three/postprocessing'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion' // eslint-disable-line no-unused-vars
 import * as THREE from 'three'
 import './App.css'
 
@@ -562,7 +562,6 @@ function App() {
   const [connected, setConnected] = useState(false)
   const [serverStats, setServerStats] = useState(null)
   const [layerActivations, setLayerActivations] = useState(null)
-  const [retryCount, setRetryCount] = useState(0)
   
   useEffect(() => {
     const interval = setInterval(() => {
@@ -615,7 +614,6 @@ function App() {
   }, [])
   
   const retryConnection = useCallback(() => {
-    setRetryCount(c => c + 1)
     fetch('http://localhost:3001/api/health')
       .then(res => res.json())
       .then(() => setConnected(true))
@@ -753,7 +751,7 @@ function App() {
                   { name: 'Hidden 1', color: '#00ff88', neurons: 8 },
                   { name: 'Hidden 2', color: '#4a90d9', neurons: 6 },
                   { name: 'Output', color: '#ff00ff', neurons: 4 }
-                ].map((layer, i) => (
+                ].map((layer) => (
                   <motion.div
                     key={layer.name}
                     className="layer-chip"
