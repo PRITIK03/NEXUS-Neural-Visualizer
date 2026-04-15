@@ -405,3 +405,173 @@ process.on('uncaughtException', (err) => {
   console.error('Uncaught exception:', err.message)
   process.exit(1)
 })
+
+class CanvasManager {
+  constructor(maxHistory = 100) {
+    this.maxHistory = maxHistory
+    this.strokes = []
+    this.history = []
+    this.historyIndex = -1
+    this.undone = []
+    this.roomCanvases = new Map()
+  }
+
+  addStroke(stroke) {
+    if (this.historyIndex < this.history.length - 1) {
+      this.history = this.history.slice(0, this.historyIndex + 1)
+    }
+    this.history.push(stroke)
+    if (this.history.length > this.maxHistory) {
+      this.history.shift()
+    } else {
+      this.historyIndex++
+    }
+    this.strokes.push(stroke)
+  }
+
+  undo() {
+    if (this.historyIndex < 0) return null
+    const stroke = this.history[this.historyIndex]
+    this.historyIndex--
+    return stroke
+  }
+
+  redo() {
+    if (this.historyIndex >= this.history.length - 1) return null
+    this.historyIndex++
+    return this.history[this.historyIndex]
+  }
+
+  clear() {
+    this.history = []
+    this.historyIndex = -1
+    this.strokes = []
+  }
+
+  getRoom(roomId) {
+    if (!this.roomCanvases.has(roomId)) {
+      this.roomCanvases.set(roomId, {
+        strokes: [],
+        history: [],
+        historyIndex: -1,
+        users: new Set()
+      })
+    }
+    return this.roomCanvases.get(roomId)
+  }
+
+  addStrokeToRoom(roomId, stroke) {
+    const room = this.getRoom(roomId)
+    if (room.historyIndex < room.history.length - 1) {
+      room.history = room.history.slice(0, room.historyIndex + 1)
+    }
+    room.history.push(stroke)
+    if (room.history.length > this.maxHistory) {
+      room.history.shift()
+    } else {
+      room.historyIndex++
+    }
+    room.strokes.push(stroke)
+  }
+}
+
+const canvasManager = new CanvasManager(100)
+
+io.on('connection', (socket) => {
+  const session = new ClientSession(socket)
+  clientSessions.set(socket.id, session)
+  
+  let currentRoom = 'global'
+  const userRooms = new Map()
+
+  socket.on('join-room', (data) => {
+    if (!data?.roomId) return
+    socket.leave(currentRoom)
+    currentRoom = data.roomId
+    socket.join(currentRoom)
+    const room = canvasManager.getRoom(currentRoom)
+    room.users.add(socket.id)
+    socket.emit('room-joined', {
+      roomId: currentRoom,
+      strokes: room.strokes.slice(-50),
+      userCount: room.users.size
+    })
+    socket.to(currentRoom).emit('user-joined-room', { userId: socket.id, userCount: room.users.size })
+  })
+
+  socket.on('canvas-start', (data) => {
+    if (!data?.stroke) return
+    const stroke = { ...data.stroke, id: Date.now().toString(36) + Math.random().toString(36).slice(2), userId: socket.id, timestamp: Date.now() }
+    canvasManager.addStrokeToRoom(currentRoom, stroke)
+    socket.to(currentRoom).emit('canvas-stroke', stroke)
+  })
+
+  socket.on('canvas-draw', (data) => {
+    if (!data?.stroke) return
+    const stroke = { ...data.stroke, id: Date.now().toString(36) + Math.random().toString(36).slice(2), userId: socket.id, timestamp: Date.now() }
+    canvasManager.addStrokeToRoom(currentRoom, stroke)
+    socket.to(currentRoom).emit('canvas-stroke', stroke)
+  })
+
+  socket.on('canvas-clear', () => {
+    const room = canvasManager.getRoom(currentRoom)
+    room.strokes = []
+    room.history = []
+    room.historyIndex = -1
+    io.to(currentRoom).emit('canvas-cleared', { by: socket.id })
+  })
+
+  socket.on('canvas-undo', () => {
+    const room = canvasManager.getRoom(currentRoom)
+    if (room.historyIndex >= 0) {
+      const stroke = room.history[room.historyIndex]
+      room.historyIndex--
+      io.to(currentRoom).emit('canvas-undo', stroke)
+    }
+  })
+
+  canvasManager.addStrokeToRoom('global', { userId: socket.id, timestamp: Date.now(), type: 'join' })
+  
+  socket.emit('init', {
+    ...neuralNetworkData,
+    sessionId: socket.id,
+    serverTime: Date.now(),
+    tickRate,
+    sessions: clientSessions.size
+  })
+  
+  socket.on('ping', (data) => {
+    if (data?.timestamp) {
+      const session = clientSessions.get(socket.id)
+      if (session) session.updateLatency(data.timestamp)
+    }
+    socket.emit('pong', { timestamp: Date.now(), serverTime: Date.now() })
+  })
+  
+  socket.on('preferences', (data) => {
+    const session = clientSessions.get(socket.id)
+    if (session && data) {
+      session.preferences = { ...session.preferences, ...data }
+      socket.emit('preferences-updated', session.preferences)
+    }
+  })
+  
+  socket.on('disconnect', (reason) => {
+    const session = clientSessions.get(socket.id)
+    if (session) {
+      session.reconnectCount++
+    }
+    clientSessions.delete(socket.id)
+  })
+  
+  socket.on('reconnect', (data) => {
+    if (data?.previousSessionId) {
+      const oldSession = clientSessions.get(data.previousSessionId)
+      if (oldSession) {
+        oldSession.id = socket.id
+        clientSessions.set(socket.id, oldSession)
+        socket.emit('session-restored', oldSession.toJSON())
+      }
+    }
+  })
+})
