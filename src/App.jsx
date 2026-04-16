@@ -379,9 +379,9 @@ function AIChat({ connected, onSendMessage }) {
             <motion.div
               key={i}
               className={`message ${msg.role}`}
-              initial={{ opacity: 0, x: msg.role === 'user' ? 20 : -20, y: 10 }}
+              initial={{ opacity: 0, x: msg.role === 'user' ? 30 : -30, y: 15 }}
               animate={{ opacity: 1, x: 0, y: 0 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
+              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
             >
               <div className="message-content">
                 {msg.typing ? (
@@ -699,7 +699,7 @@ function App() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
               className="chat-container"
             >
               <AIChat connected={connected} onSendMessage={handleSendMessage} />
@@ -711,7 +711,7 @@ function App() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
               className="visualizer-container"
             >
               <div className="canvas-wrapper">
@@ -744,7 +744,7 @@ function App() {
                 className="layer-indicators"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.3, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
               >
                 {[
                   { name: 'Input', color: '#00ffff', neurons: 5 },
