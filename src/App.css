@@ -384,11 +384,12 @@ body {
   border: 1px solid var(--glass-border);
   border-radius: 14px;
   cursor: pointer;
-  transition: all 0.3s var(--ease-fluid);
+  transition: all 0.4s var(--ease-smooth), border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .layer-chip:hover {
   box-shadow: 0 8px 32px rgba(0, 255, 255, 0.15);
+  transform: translateY(-2px);
 }
 
 .layer-dot {
@@ -532,7 +533,7 @@ body {
 .monitor-fill {
   height: 100%;
   border-radius: 2px;
-  transition: width 0.3s var(--ease-fluid);
+  transition: width 0.5s var(--ease-smooth), background 0.3s ease;
 }
 
 .monitor-fill.cpu {
@@ -686,7 +687,7 @@ body {
   border-radius: 20px;
   font-size: 15px;
   line-height: 1.7;
-  transition: all 0.3s var(--ease-fluid);
+  transition: all 0.3s var(--ease-smooth), box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .message.user .message-content {
@@ -781,14 +782,15 @@ body {
   font-family: var(--font-body);
   font-size: 16px;
   outline: none;
-  transition: all 0.2s var(--ease-fluid);
+  transition: all 0.3s var(--ease-smooth), border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .input-wrapper input:focus {
   border-color: var(--secondary);
   box-shadow: 
     0 0 30px rgba(0, 255, 255, 0.2),
-    inset 0 0 16px rgba(0, 255, 255, 0.04);
+    inset 0 0 16px rgba(0, 255, 255, 0.04),
+    0 4px 20px rgba(0, 0, 0, 0.2);
 }
 
 .input-wrapper input::placeholder {
