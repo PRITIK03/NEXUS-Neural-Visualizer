@@ -347,7 +347,7 @@ function AIChat({ connected, onSendMessage }) {
       className="ai-chat"
       initial={{ opacity: 0, y: 50, scale: 0.95 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
-      transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+      transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
     >
       {showShortcut && (
         <motion.div
@@ -472,7 +472,7 @@ function StatsPanel({ stats }) {
       className="stats-panel"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.3 }}
+      transition={{ delay: 0.4, duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
     >
       <div className="stats-grid">
         {statItems.map((stat) => (

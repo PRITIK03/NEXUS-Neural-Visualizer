@@ -169,10 +169,23 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 20px 48px;
-  background: linear-gradient(180deg, rgba(6, 10, 18, 0.98) 0%, rgba(6, 10, 18, 0.85) 100%);
-  backdrop-filter: blur(24px);
+  background: linear-gradient(180deg, rgba(6, 10, 18, 0.95) 0%, rgba(6, 10, 18, 0.8) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--glass-border);
   transform: translateZ(0);
+  transition: all 0.4s var(--ease-smooth);
+}
+
+.header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--secondary) 50%, transparent 100%);
+  opacity: 0.3;
 }
 
 .logo {
