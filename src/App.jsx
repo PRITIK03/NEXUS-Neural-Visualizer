@@ -877,6 +877,7 @@ function App() {
             >
               <AIChat connected={connected} onSendMessage={handleSendMessage} />
               <StatsPanel stats={serverStats} />
+              <DataFlowVisualization active={connected} />
             </motion.div>
           ) : (
             <motion.div
