@@ -6,6 +6,169 @@ import { AnimatePresence, motion } from 'framer-motion' // eslint-disable-line n
 import * as THREE from 'three'
 import './App.css'
 
+function DataFlowVisualization({ active }) {
+  const [packets, setPackets] = useState([])
+  const [isAnimating, setIsAnimating] = useState(false)
+
+  useEffect(() => {
+    if (active) {
+      setIsAnimating(true)
+      const interval = setInterval(() => {
+        const newPackets = Array(3).fill(0).map((_, i) => ({
+          id: Date.now() + i,
+          delay: Math.random() * 100,
+          size: 20 + Math.random() * 80,
+          status: ['processing', 'transmitting', 'completed'][Math.floor(Math.random() * 3)]
+        }))
+        setPackets(prev => [...prev.slice(-8), ...newPackets])
+      }, 400)
+      return () => clearInterval(interval)
+    } else {
+      setIsAnimating(false)
+    }
+  }, [active])
+
+  if (!active) return null
+
+  return (
+    <motion.div
+      className="data-flow-panel"
+      initial={{ opacity: 0, x: -50 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -50 }}
+    >
+      <div className="flow-header">
+        <span className="flow-icon">⫸</span>
+        <span>Neural Data Pipeline</span>
+        <div className={`flow-status ${isAnimating ? 'active' : ''}`} />
+      </div>
+      <div className="flow-timeline">
+        <div className="flow-step completed">Input</div>
+        <div className="flow-step active">Encode</div>
+        <div className="flow-step processing">Attention</div>
+        <div className="flow-step">Decode</div>
+        <div className="flow-step">Output</div>
+      </div>
+      <div className="packet-stream">
+        {packets.map((packet) => (
+          <motion.div
+            key={packet.id}
+            className={`packet ${packet.status}`}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+          >
+            <span className="packet-size">{Math.round(packet.size)}KB</span>
+            <span className="packet-status">{packet.status}</span>
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  )
+}
+
+function CommandPalette({ onCommand }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [query, setQuery] = useState('')
+  const [selectedIndex, setSelectedIndex] = useState(0)
+
+  const commands = [
+    { id: 'visualize', label: 'Toggle Neural Visualizer', icon: '◈', action: 'toggleView' },
+    { id: 'clear', label: 'Clear Neural Connections', icon: '⬡', action: 'clearNeurons' },
+    { id: 'pulse', label: 'Pulse All Neurons', icon: '◉', action: 'pulseNeurons' },
+    { id: 'export', label: 'Export Network State', icon: '↓', action: 'exportState' },
+    { id: 'theme', label: 'Toggle Theme', icon: '◐', action: 'toggleTheme' },
+    { id: 'reset', label: 'Reset View', icon: '↺', action: 'resetView' }
+  ]
+
+  const filteredCommands = commands.filter(cmd => 
+    cmd.label.toLowerCase().includes(query.toLowerCase())
+  )
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault()
+        setIsOpen(true)
+      }
+      if (e.key === 'Escape') setIsOpen(false)
+      if (!isOpen) return
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        setSelectedIndex(i => (i + 1) % filteredCommands.length)
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        setSelectedIndex(i => (i - 1 + filteredCommands.length) % filteredCommands.length)
+      }
+      if (e.key === 'Enter' && filteredCommands[selectedIndex]) {
+        onCommand(filteredCommands[selectedIndex].action)
+        setIsOpen(false)
+        setQuery('')
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, filteredCommands, selectedIndex, onCommand])
+
+  if (!isOpen) return (
+    <motion.button
+      className="palette-trigger"
+      onClick={() => setIsOpen(true)}
+      whileHover={{ scale: 1.02 }}
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
+      <span>⌘</span>
+      <span>Commands</span>
+    </motion.button>
+  )
+
+  return (
+    <motion.div
+      className="command-palette-overlay"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      onClick={() => setIsOpen(false)}
+    >
+      <motion.div
+        className="command-palette"
+        initial={{ opacity: 0, y: -20, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        onClick={e => e.stopPropagation()}
+      >
+        <input
+          type="text"
+          value={query}
+          onChange={e => { setQuery(e.target.value); setSelectedIndex(0) }}
+          placeholder="Type a command..."
+          autoFocus
+        />
+        <div className="command-list">
+          {filteredCommands.map((cmd, i) => (
+            <motion.div
+              key={cmd.id}
+              className={`command-item ${i === selectedIndex ? 'selected' : ''}`}
+              onClick={() => { onCommand(cmd.action); setIsOpen(false); setQuery('') }}
+              onMouseEnter={() => setSelectedIndex(i)}
+              whileHover={{ backgroundColor: 'rgba(0, 255, 255, 0.1)' }}
+            >
+              <span className="cmd-icon">{cmd.icon}</span>
+              <span className="cmd-label">{cmd.label}</span>
+            </motion.div>
+          ))}
+        </div>
+        <div className="palette-footer">
+          <span><kbd>↑↓</kbd> Navigate</span>
+          <span><kbd>↵</kbd> Execute</span>
+          <span><kbd>Esc</kbd> Close</span>
+        </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
 function NeuronConnection({ start, end, pulse }) {
   const lineRef = useRef()
   
@@ -671,6 +834,16 @@ function App() {
         </motion.div>
         
         <nav className="nav">
+          <CommandPalette onCommand={(cmd) => {
+            if (cmd === 'toggleView') setShowChat(!showChat)
+            if (cmd === 'clearNeurons') setLayerActivations({ 0: [], 1: [], 2: [], 3: [] })
+            if (cmd === 'pulseNeurons') setLayerActivations({
+              0: Array(5).fill(0).map(() => Math.random()),
+              1: Array(8).fill(0).map(() => Math.random()),
+              2: Array(6).fill(0).map(() => Math.random()),
+              3: Array(4).fill(0).map(() => Math.random())
+            })
+          }} />
           <motion.button
             onClick={() => setShowChat(!showChat)}
             whileHover={{ scale: 1.02 }}
