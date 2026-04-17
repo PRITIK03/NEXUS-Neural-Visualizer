@@ -1,49 +1,57 @@
 # NEXUS Neural Visualizer
 
-A cyberpunk-themed AI chat interface with an interactive 3D neural network visualization built with React, Three.js, and Framer Motion. Features real-time canvas drawing with multiple rooms.
+A cyberpunk-themed AI neural network visualization interface built with React, Three.js, and Framer Motion. Features an interactive 3D neural network visualization with real-time data flow visualization, command palette, and AI chat.
 
 ## Features
 
 ### 3D Neural Network Visualizer
-- Interactive 3D scene with animated neural nodes
+- Interactive 3D scene with animated neural nodes using Three.js
 - Orbit controls for camera manipulation (zoom, pan, rotate)
 - Post-processing effects: Bloom, Vignette, ChromaticAberration
-- Floating animation with stars background
-- Real-time neuron activations with spring physics
+- Floating animation with particle field and stars background
+- Real-time neuron activations with pulsing effects
 - Multiple neural layers (Input, Hidden 1, Hidden 2, Output)
+- Clickable neurons with hover tooltips
 
 ### AI Chat Interface
 - Cyberpunk-themed chat UI with glassmorphism effects
-- Animated message appearances with smooth transitions
-- Typing indicators with pulsing dots
+- Animated message appearances with typewriter effect
+- Typing indicators with bouncing dots animation
 - Auto-scroll to latest messages
-- Neural network-themed AI responses with sentiment detection
+- Neural network-themed AI responses
+- Keyboard shortcuts for navigation
 
-### Real-time Canvas
-- Collaborative drawing in multiple rooms
-- Stroke history with undo capability
-- Room-based canvas isolation
-- Real-time stroke synchronization via WebSocket
+### Command Palette
+- Press `Ctrl+K` or click "Commands" button to open
+- Searchable command list
+- Quick actions: Toggle view, Clear neurons, Pulse neurons, etc.
+- Keyboard navigation support
+
+### Data Flow Visualization
+- Real-time neural data pipeline display
+- Animated stage indicators (Input → Encode → Attention → Decode → Output)
+- Live packet stream with status indicators
 
 ### UI/UX
-- Smooth scrolling with momentum
-- GPU-accelerated animations
-- Responsive design for all screen sizes
 - Glassmorphism effects with backdrop blur
 - Custom styled scrollbars with glow effects
 - Smooth hover and focus transitions
+- Responsive design for all screen sizes
+- Animated notifications/toasts
+- Quick actions floating panel
+- Activity monitor (CPU, MEM, NET)
+- Stats panel with real-time metrics
 
 ## Tech Stack
 
-- **React** - UI framework
+- **React 18** - UI framework
 - **Vite** - Build tool
 - **Three.js / @react-three/fiber** - 3D rendering
-- **@react-three/drei** - Three.js helpers (OrbitControls, Float, Stars, Line)
+- **@react-three/drei** - Three.js helpers (OrbitControls, Float, Stars, Line, Html)
 - **@react-three/postprocessing** - Post-processing effects
 - **Framer Motion** - Animation library
 - **Express** - Backend server
-- **Socket.io** - WebSocket for real-time features
-- **CSS** - Styling with CSS variables
+- **CSS** - Styling with CSS variables and modern features
 
 ## Getting Started
 
@@ -93,17 +101,11 @@ GET /api/health
 ```
 Returns server status, uptime, memory usage, and connected sessions.
 
-### Network Data
-```
-GET /api/network
-```
-Returns neural network configuration and real-time simulation data.
-
 ### Statistics
 ```
 GET /api/stats
 ```
-Returns server statistics including parameters, latency, and memory.
+Returns server statistics including parameters, latency, memory, and sessions.
 
 ### Chat
 ```
@@ -114,36 +116,11 @@ Content-Type: application/json
 ```
 Returns AI response with processing time and sentiment.
 
-### Canvas (REST)
+### Network Data
 ```
-GET /api/canvas?roomId=room_name
-POST /api/canvas/stroke
-POST /api/canvas/clear
-GET /api/rooms
+GET /api/network
 ```
-
-## WebSocket Events
-
-### Server -> Client
-- `init` - Initial network data and session info
-- `network-update` - Real-time neuron activations
-- `pong` - Latency response
-- `preferences-updated` - Settings confirmation
-- `session-restored` - Reconnection success
-- `room-joined` - Canvas room join confirmation
-- `canvas-stroke` - New stroke from another user
-- `canvas-cleared` - Canvas cleared by user
-- `canvas-undo` - Stroke undone by user
-
-### Client -> Server
-- `ping` - Latency measurement
-- `preferences` - Update client settings
-- `reconnect` - Restore previous session
-- `join-room` - Join a canvas room
-- `canvas-start` - Start drawing
-- `canvas-draw` - Continue drawing
-- `canvas-clear` - Clear canvas
-- `canvas-undo` - Undo last stroke
+Returns neural network configuration and layer information.
 
 ## Project Structure
 
@@ -155,8 +132,15 @@ src/
 ├── main.jsx         # React entry point
 └── assets/          # Static assets
 
-server.js            # Express + Socket.io server
+server.js            # Express backend server
 ```
+
+## Keyboard Shortcuts
+
+- `Ctrl+K` - Open command palette
+- `Enter` - Send message in chat
+- `Shift+?` - Show shortcut hints
+- `Escape` - Close command palette / hints
 
 ## Customization
 
@@ -167,28 +151,21 @@ Edit CSS variables in `App.css`:
   --primary: #4a90d9;
   --secondary: #00ffff;
   --accent: #ff00ff;
-  --dark-bg: #0a0e17;
+  --dark-bg: #060a12;
 }
 ```
 
 ### Neural Network Config
-Modify `server.js` to adjust network structure:
+Modify the layer configuration in `App.jsx`:
 ```javascript
-const neuralNetworkData = {
-  layers: [
-    { id: 0, name: 'Input', neurons: 5 },
-    { id: 1, name: 'Hidden 1', neurons: 8 },
-    // ...
-  ]
-}
+const layers = useMemo(() => [5, 8, 6, 4], [])
 ```
 
 ### Fonts
 The project uses:
 - **Syne** - Display font
-- **Orbitron** - Navigation/buttons
-- **Rajdhani** - Body text
-- **Space Mono** - Code/mono elements
+- **Outfit** - Body text
+- **JetBrains Mono** - Code/mono elements
 
 ## Browser Support
 
