@@ -6,6 +6,78 @@ import { AnimatePresence, motion } from 'framer-motion' // eslint-disable-line n
 import * as THREE from 'three'
 import './App.css'
 
+function NotificationSystem() {
+  const [notifications, setNotifications] = useState([])
+
+  const addNotification = useCallback((message, type = 'info') => {
+    const id = Date.now()
+    setNotifications(prev => [...prev, { id, message, type }])
+  }, [])
+
+  const removeNotification = useCallback((id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id))
+  }, [])
+
+  useEffect(() => {
+    window.dispatchEvent(new CustomEvent('nexus-notification', { detail: { message: 'Neural network initialized', type: 'success' } }))
+  }, [])
+
+  return (
+    <div className="notification-container">
+      <AnimatePresence>
+        {notifications.map(notif => (
+          <motion.div
+            key={notif.id}
+            className={`toast-notification ${notif.type}`}
+            initial={{ opacity: 0, x: 100, scale: 0.8 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 100, scale: 0.8 }}
+            whileHover={{ scale: 1.02 }}
+          >
+            <span className="toast-icon">
+              {notif.type === 'success' ? '✓' : notif.type === 'error' ? '✕' : notif.type === 'info' ? 'ℹ' : '⚡'}
+            </span>
+            <span className="toast-message">{notif.message}</span>
+            <button className="toast-close" onClick={() => removeNotification(notif.id)}>×</button>
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+function QuickActionsPanel({ onAction }) {
+  const actions = [
+    { id: 'pulse', icon: '◉', label: 'Pulse', color: '#00ffff' },
+    { id: 'spin', icon: '↻', label: 'Rotate', color: '#00ff88' },
+    { id: 'zoom', icon: '⊕', label: 'Zoom', color: '#4a90d9' },
+    { id: 'reset', icon: '↺', label: 'Reset', color: '#ff00ff' }
+  ]
+
+  return (
+    <motion.div
+      className="quick-actions-panel"
+      initial={{ opacity: 0, y: 50 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.6 }}
+    >
+      {actions.map((action) => (
+        <motion.button
+          key={action.id}
+          className="quick-action-btn"
+          style={{ '--action-color': action.color }}
+          onClick={() => onAction?.(action.id)}
+          whileHover={{ scale: 1.1, y: -3 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <span className="action-icon">{action.icon}</span>
+          <span className="action-label">{action.label}</span>
+        </motion.button>
+      ))}
+    </motion.div>
+  )
+}
+
 function DataFlowVisualization({ active }) {
   const [packets, setPackets] = useState([])
   const [isAnimating, setIsAnimating] = useState(false)
@@ -795,6 +867,7 @@ function App() {
       </div>
       
       <header className="header">
+        <NotificationSystem />
         <motion.div
           className="logo"
           initial={{ opacity: 0, x: -50 }}
@@ -945,6 +1018,17 @@ function App() {
               <StatsPanel stats={serverStats} />
               
               <ActivityMonitor />
+              
+              <QuickActionsPanel onAction={(action) => {
+                if (action === 'pulse') {
+                  setLayerActivations({
+                    0: Array(5).fill(0).map(() => Math.random()),
+                    1: Array(8).fill(0).map(() => Math.random()),
+                    2: Array(6).fill(0).map(() => Math.random()),
+                    3: Array(4).fill(0).map(() => Math.random())
+                  })
+                }
+              }} />
             </motion.div>
           )}
         </AnimatePresence>
