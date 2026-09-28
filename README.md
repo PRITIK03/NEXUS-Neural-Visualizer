@@ -1,4 +1,4 @@
-# NEXUS Neural Visualizer
+# NEXUS Neural Visualizer:)
 
 A cyberpunk-themed AI neural network visualization interface built with React, Three.js, and Framer Motion. Features an interactive 3D neural network visualization with real-time data flow visualization, command palette, and AI chat.
 
