@@ -4,7 +4,7 @@ A cyberpunk-themed AI neural network visualization interface built with React, T
 
 ## Features
 
-### 3D Neural Network Visualizer
+### 3D Neural Network Visualizer-
 - Interactive 3D scene with animated neural nodes using Three.js
 - Orbit controls for camera manipulation (zoom, pan, rotate)
 - Post-processing effects: Bloom, Vignette, ChromaticAberration
